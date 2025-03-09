@@ -70,6 +70,10 @@
                 startTimeInput.value = storedStartTime;
             }
 
+            startTimeInput.addEventListener('input', function() {
+                localStorage.setItem('startTime_' + weekday, startTimeInput.value);
+            });
+
             function calculateWorkTime() {
                 const startTime = startTimeInput.value;
                 const ignoreTime = parseFloat(ignoreTimeInput.value) || 0;
