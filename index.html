@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Work Balance Calculator</title>
     <style>
         body {
@@ -12,8 +12,9 @@
             color: #ffffff;
         }
         .container {
-            max-width: 400px;
+            max-width: 100%;
             margin: auto;
+            padding: 10px;
         }
         input, button {
             width: 100%;
@@ -23,9 +24,22 @@
             color: #fff;
             border: none;
             border-radius: 5px;
+            box-sizing: border-box;
         }
         input[type="time"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
+        }
+        @media (max-width: 600px) {
+            body {
+                margin: 10px;
+            }
+            .container {
+                padding: 5px;
+            }
+            input, button {
+                padding: 8px;
+                margin: 8px 0;
+            }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -92,7 +106,7 @@
                     const workTime = (elapsedTime - ignoreTime) / 2;
                     timeLabels.push(currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
                     workData.push(workTime);
-                    currentTime = new Date(currentTime.getTime() + 60 * 60 * 100);
+                    currentTime = new Date(currentTime.getTime() + 60 * 60 * 500);
                 }
 
                 const chart = new Chart(workChart, {
