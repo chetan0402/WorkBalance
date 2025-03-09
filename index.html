@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Balance Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Work Balance Calculator</h1>
+        <form id="workForm">
+            <label for="startTime">Start Time:</label>
+            <input type="time" id="startTime" required>
+            <label for="ignoreTime">Ignore Time (hrs):</label>
+            <input type="number" id="ignoreTime" min="0" step="0.1" required>
+        </form>
+        <h2 id="result"></h2>
+        <canvas id="workChart" width="400" height="200"></canvas>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('workForm');
+            const result = document.getElementById('result');
+            const startTimeInput = document.getElementById('startTime');
+            const ignoreTimeInput = document.getElementById('ignoreTime');
+            const workChart = document.getElementById('workChart').getContext('2d');
+            const weekday = new Date().getDay();
+
+            const storedStartTime = localStorage.getItem('startTime_' + weekday);
+            if (storedStartTime) {
+                startTimeInput.value = storedStartTime;
+            }
+
+            function calculateWorkTime() {
+                const startTime = startTimeInput.value;
+                const ignoreTime = parseFloat(ignoreTimeInput.value) || 0;
+
+                if (!startTime) {
+                    result.textContent = '';
+                    return;
+                }
+
+                const now = new Date();
+                const [hours, minutes] = startTime.split(':').map(Number);
+                const startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+                const elapsedTime = (now - startDateTime) / (1000 * 60 * 60);
+                const workTime = (elapsedTime - ignoreTime) / 2;
+
+                const workHours = Math.floor(workTime);
+                const workMinutes = Math.round((workTime - workHours) * 60);
+
+                result.textContent = `Work time: ${workHours}hrs ${workMinutes}mins`;
+
+                updateChart(startDateTime, ignoreTime);
+            }
+
+            function updateChart(startDateTime, ignoreTime) {
+                const endTime = new Date(startDateTime);
+                endTime.setHours(23, 0, 0, 0);
+
+                const timeLabels = [];
+                const workData = [];
+                let currentTime = new Date(startDateTime);
+
+                while (currentTime <= endTime) {
+                    const elapsedTime = (currentTime - startDateTime) / (1000 * 60 * 60);
+                    const workTime = (elapsedTime - ignoreTime) / 2;
+                    timeLabels.push(currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                    workData.push(workTime);
+                    currentTime = new Date(currentTime.getTime() + 60 * 60 * 100);
+                }
+
+                const chart = new Chart(workChart, {
+                    type: 'line',
+                    data: {
+                        labels: timeLabels,
+                        datasets: [{
+                            label: 'Work Time (hrs)',
+                            data: workData,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                            radius: 0,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        animation: {
+                            duration: 0
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Work Time (hrs)'
+                                },
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const workTime = context.raw;
+                                        const workHours = Math.floor(workTime);
+                                        const workMinutes = Math.round((workTime - workHours) * 60);
+                                        return `Work Time: ${workHours}hrs ${workMinutes}mins`;
+                                    }
+                                }
+                            }
+                        },
+                        interaction: {
+                            mode: 'nearest',
+                            intersect: false
+                        }
+                    }
+                });
+            }
+
+            startTimeInput.addEventListener('input', calculateWorkTime);
+            ignoreTimeInput.addEventListener('input', calculateWorkTime);
+
+            calculateWorkTime();
+        });
+    </script>
+</body>
+</html>
