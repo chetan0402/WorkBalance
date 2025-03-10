@@ -169,6 +169,12 @@
             ignoreTimeInput.addEventListener('input', calculateWorkTime);
 
             calculateWorkTime();
+
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible') {
+                    calculateWorkTime();
+                }
+            });
         });
     </script>
 </body>
